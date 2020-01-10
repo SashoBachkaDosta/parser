@@ -1,0 +1,23 @@
+{
+  "name": "@bexter/style-guide-parser",
+  "version": "1.0.1",
+  "description": "A parser that simplifies a typedoc generated JSON.",
+  "main": "dist/index.js",
+  "bin": {
+    "parser": "./bin/parser"
+  },
+  "preferGlobal": false,
+  "scripts": {
+    "build": "rimraf dist && tsc -p src/tsconfig.json && npm pack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "parser"
+  ],
+  "author": "Alexander Sinanev",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^13.1.4"
+  }
+}
