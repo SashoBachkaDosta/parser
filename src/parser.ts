@@ -1,4 +1,4 @@
-import { StyleguideElement, StyleguideSubelement, ConfigOptions } from './models/models';
+import { StyleguideElement, StyleguideSubelement, ConfigOptions, StyleGuideComment, StyleGuideDecorator, StyleGuideParameter } from './models/models';
 
 import fs = require('fs');
 
@@ -26,18 +26,10 @@ export class StyleguideParser {
                         switch (child.kind) {
                             case 2048:
                                 const method = this.createChildMethod(child, index);
-                                if (method) {
-                                    return children = [...children, method];
-                                } else {
-                                    return children;
-                                }
+                                return method ? children = [...children, method] : children;
                             case 1024:
                                 const property = this.createChildProperty(child, index);
-                                if (property) {
-                                    return children = [...children, property];
-                                } else {
-                                    return children;
-                                }
+                                return property ? children = [...children, property] : children;
                             default:
                                 return children;
                         }
@@ -47,6 +39,7 @@ export class StyleguideParser {
                     id: result.length,
                     name: item.name,
                     kind: item.kindString,
+                    decorators: this.getDecorators(item.decorators),
                     selector: this.getSelector(item.decorators),
                     comments: this.getComment(item.comment),
                     childElements: children
@@ -87,8 +80,9 @@ export class StyleguideParser {
                 id,
                 name: child.name,
                 kind: child.kindString,
+                decorators: child.decorators ? this.getDecorators(child.decorators) : null,
                 comments: this.getComment(child.signatures[0].comment),
-                parameters: child.signatures[0].parameters ? child.signatures[0].parameters : null
+                parameters: child.signatures[0].parameters ? this.getParameters(child.signatures[0].parameters) : null
             };
         }
         return childElement ? childElement : null;
@@ -106,6 +100,7 @@ export class StyleguideParser {
                 id,
                 name: child.name,
                 kind: child.kindString,
+                decorators: child.decorators ? this.getDecorators(child.decorators) : null,
                 comments: this.getComment(child.comment),
                 parameters: null
             };
@@ -117,8 +112,8 @@ export class StyleguideParser {
      * This method is used to construct a comment object.
      * @param comment comment on element.
      */
-    private static getComment(comment: any): any {
-        let result: any;
+    private static getComment(comment: any): StyleGuideComment {
+        let result: StyleGuideComment;
         if (comment && comment.shortText) {
             let shortText: string = comment.shortText;
             let codeText;
@@ -155,5 +150,38 @@ export class StyleguideParser {
             }
         }
         return null;
+    }
+
+    /**
+     * This method is used to get the decorators of a property or method.
+     * @param decorators array of decorators.
+     */
+    private static getDecorators(decorators: any[]): StyleGuideDecorator[] {
+        const res: StyleGuideDecorator[] = [];
+        decorators.forEach(decorator => {
+            if (decorator.name !== 'Component' && decorator.name !== 'Document') {
+                res.push(decorator.type)
+            }
+        })
+        return res.length > 0 ? res : null;
+    }
+
+    /**
+     * This method is used to get the parameters of a method.
+     * @param parameters array of parameters.
+     */
+    private static getParameters(parameters: any[]): any[] {
+        const res: StyleGuideParameter[] = [];
+        parameters.forEach(parameter => {
+            if (parameter) {
+                res.push({
+                    id: parameter.id,
+                    name: parameter.name,
+                    kind: parameter.kindString,
+                    comment: parameter.comment.text
+                })
+            }
+        })
+        return res.length > 0 ? res : null;
     }
 }
